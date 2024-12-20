@@ -9,3 +9,6 @@ To run the application, use the following command:
 ```bash
 dotnet run --project DuplicateLineChecker.csproj <path_to_csproj_file_to_check>
 ```
+
+# v1.0.0 Released!
+Read the release notes [here](https://github.com/callum-d-thomas/DuplicateLineChecker/releases/tag/v1.0.0).
