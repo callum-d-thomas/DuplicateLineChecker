@@ -24,9 +24,12 @@ namespace DuplicateLineChecker
                 return;
             }
 
-            var stopwatch = Stopwatch.StartNew();
-            var duplicates = FindDuplicateIncludesWithConfirmation(filePath);
-            stopwatch.Stop();
+            var totalStopwatch = Stopwatch.StartNew();
+            var searchStopwatch = new Stopwatch();
+
+            var duplicates = FindDuplicateIncludesWithConfirmation(filePath, searchStopwatch);
+            
+            totalStopwatch.Stop();
 
             if (duplicates.Any())
             {
@@ -43,10 +46,11 @@ namespace DuplicateLineChecker
                 Console.WriteLine("\nNo confirmed duplicate <Include> statements found.\n");
             }
 
-            Console.WriteLine($"\nSearch completed in {stopwatch.Elapsed.TotalSeconds:F2} seconds.\n");
+            Console.WriteLine($"\nTotal execution time: {totalStopwatch.Elapsed.TotalSeconds:F2} seconds.");
+            Console.WriteLine($"Search duration: {searchStopwatch.Elapsed.TotalSeconds:F2} seconds.");
         }
 
-        static IEnumerable<string> FindDuplicateIncludesWithConfirmation(string filePath)
+        static IEnumerable<string> FindDuplicateIncludesWithConfirmation(string filePath, Stopwatch searchStopwatch)
         {
             var doc = XDocument.Load(filePath);
             var includes = doc.Descendants()
@@ -62,8 +66,10 @@ namespace DuplicateLineChecker
             {
                 for (int j = i + 1; j < includes.Count; j++)
                 {
+                    searchStopwatch.Start();
                     if (includes[i] == includes[j] && !seen.Contains(includes[i]))
                     {
+                        searchStopwatch.Stop();
                         Console.WriteLine($"\nPotential duplicate found:\n1: {includes[i]}\n2: {includes[j]}");
                         Console.Write("\nDo you consider these <Include> statements duplicates? (y/n): ");
                         var response = Console.ReadLine();
@@ -77,6 +83,10 @@ namespace DuplicateLineChecker
                             Console.WriteLine("\nOperation cancelled.\n");
                             Environment.Exit(0);
                         }
+                    }
+                    else
+                    {
+                        searchStopwatch.Stop();
                     }
                 }
                 DisplayProgress(i + 1, total);
